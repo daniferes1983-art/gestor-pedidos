@@ -454,12 +454,15 @@
                 <div class="form-group">
                     <label>Email (opcional)</label>
                     <input type="email" id="supplierEmail" placeholder="ejemplo@email.com">
-                </div>
-                <div class="form-group">
+                </div>                <div class="form-group">
                     <label>WhatsApp (opcional)</label>
                     <input type="tel" id="supplierWhatsapp" placeholder="+34 600 123 456">
                 </div>
-                <button onclick="addSupplier()">➕ Añadir Proveedor</button>
+                <div class="form-group">
+                    <label>CIF / Número de Cliente (opcional)</label>
+                    <input type="text" id="supplierCif" placeholder="Ej: B12345678 o CLI-001">
+                </div>
+                <button onclick="addSupplier()">➞️ Añadir Proveedor</button>
             </div>
 
             <div id="productFormView" style="display: none;">
@@ -603,6 +606,7 @@
             const name = document.getElementById('supplierName').value.trim();
             const email = document.getElementById('supplierEmail').value.trim();
             const whatsapp = document.getElementById('supplierWhatsapp').value.trim();
+            const cif = document.getElementById('supplierCif').value.trim();
 
             if (!name) {
                 alert('Por favor, ingresa el nombre del proveedor');
@@ -614,6 +618,7 @@
                 name: name,
                 email: email,
                 whatsapp: whatsapp,
+                cif: cif,
                 products: []
             };
 
@@ -621,6 +626,7 @@
             document.getElementById('supplierName').value = '';
             document.getElementById('supplierEmail').value = '';
             document.getElementById('supplierWhatsapp').value = '';
+            document.getElementById('supplierCif').value = '';
             saveData();
             updateUI();
         }
@@ -711,11 +717,70 @@
             updateCurrentProductsList();
         }
 
+        // Editar proveedor
+        function editSupplier(supplierId) {
+            const supplier = data.suppliers.find(s => s.id === supplierId);
+            if (!supplier) return;
+
+            // Rellenar el formulario con los datos actuales
+            document.getElementById('supplierName').value = supplier.name;
+            document.getElementById('supplierEmail').value = supplier.email || '';
+            document.getElementById('supplierWhatsapp').value = supplier.whatsapp || '';
+            document.getElementById('supplierCif').value = supplier.cif || '';
+
+            // Cambiar el botón de "Añadir" a "Actualizar"
+            const addButton = document.querySelector('#supplierFormView button');
+            addButton.textContent = '✔️ Actualizar Proveedor';
+            addButton.onclick = function() {
+                updateSupplier(supplierId);
+            };
+
+            // Hacer scroll al formulario
+            document.getElementById('supplierFormView').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Actualizar proveedor
+        function updateSupplier(supplierId) {
+            const name = document.getElementById('supplierName').value.trim();
+            const email = document.getElementById('supplierEmail').value.trim();
+            const whatsapp = document.getElementById('supplierWhatsapp').value.trim();
+            const cif = document.getElementById('supplierCif').value.trim();
+
+            if (!name) {
+                alert('Por favor, ingresa el nombre del proveedor');
+                return;
+            }
+
+            const supplier = data.suppliers.find(s => s.id === supplierId);
+            if (supplier) {
+                supplier.name = name;
+                supplier.email = email;
+                supplier.whatsapp = whatsapp;
+                supplier.cif = cif;
+
+                // Limpiar formulario
+                document.getElementById('supplierName').value = '';
+                document.getElementById('supplierEmail').value = '';
+                document.getElementById('supplierWhatsapp').value = '';
+                document.getElementById('supplierCif').value = '';
+
+                // Restaurar botón de "Añadir"
+                const addButton = document.querySelector('#supplierFormView button');
+                addButton.textContent = '➞️ Añadir Proveedor';
+                addButton.onclick = addSupplier;
+
+                saveData();
+                updateUI();
+                alert('✅ Proveedor actualizado correctamente');
+            }
+        }
+
         // Eliminar proveedor
         function deleteSupplier(supplierId) {
             if (confirm('¿Eliminar este proveedor y todos sus productos?')) {
                 data.suppliers = data.suppliers.filter(s => s.id !== supplierId);
                 saveData();
+                updateUI();
             }
         }
 
@@ -1060,8 +1125,10 @@
                             <h3>${supplier.name}</h3>
                             ${supplier.email ? `<p>📧 ${supplier.email}</p>` : ''}
                             ${supplier.whatsapp ? `<p>💬 ${supplier.whatsapp}</p>` : ''}
+                            ${supplier.cif ? `<p>🏢 CIF/Cliente: ${supplier.cif}</p>` : ''}
                             <p><strong>${supplier.products.length}</strong> productos</p>
                             <div class="item-actions">
+                                <button onclick="editSupplier(${supplier.id})" style="background: #FF9800;">✏️ Editar</button>
                                 <button onclick="editSupplierProducts(${supplier.id})">📝 Productos</button>
                                 <button class="btn-danger" onclick="deleteSupplier(${supplier.id})">🗑️</button>
                             </div>
