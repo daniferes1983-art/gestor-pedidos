@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Proveedores y Pedidos</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -12,44 +11,11 @@
             box-sizing: border-box;
         }
 
-        :root {
-            --bg-gradient-start: #667eea;
-            --bg-gradient-end: #764ba2;
-            --card-bg: #ffffff;
-            --text-primary: #333333;
-            --text-secondary: #666666;
-            --text-muted: #999999;
-            --border-color: #e0e0e0;
-            --input-bg: #ffffff;
-            --primary-color: #667eea;
-            --primary-hover: #5568d3;
-            --item-bg: #f8f9fa;
-            --stat-bg: #e7f3ff;
-            --order-header-bg: #e7f3ff;
-        }
-
-        body.dark-mode {
-            --bg-gradient-start: #1a1a2e;
-            --bg-gradient-end: #16213e;
-            --card-bg: #0f3460;
-            --text-primary: #e8e8e8;
-            --text-secondary: #b8b8b8;
-            --text-muted: #888888;
-            --border-color: #2a4a6a;
-            --input-bg: #1a3a5a;
-            --primary-color: #667eea;
-            --primary-hover: #5568d3;
-            --item-bg: #1a3a5a;
-            --stat-bg: #1a3a5a;
-            --order-header-bg: #1a3a5a;
-        }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding-bottom: 70px;
-            transition: all 0.3s ease;
         }
 
         .container {
@@ -59,41 +25,17 @@
         }
 
         .header {
-            background: var(--card-bg);
+            background: white;
             border-radius: 15px;
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            position: relative;
         }
 
         .header h1 {
-            color: var(--primary-color);
+            color: #667eea;
             font-size: 24px;
             margin-bottom: 10px;
-        }
-
-        .theme-toggle {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: var(--primary-color);
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-
-        .theme-toggle:hover {
-            transform: scale(1.1);
-            background: var(--primary-hover);
         }
 
         .tabs {
@@ -105,23 +47,22 @@
         .tab {
             flex: 1;
             padding: 12px;
-            background: var(--item-bg);
+            background: #f0f0f0;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
             font-weight: 600;
             transition: all 0.3s;
-            color: var(--text-primary);
         }
 
         .tab.active {
-            background: var(--primary-color);
+            background: #667eea;
             color: white;
         }
 
         .content {
-            background: var(--card-bg);
+            background: white;
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -132,10 +73,6 @@
             display: block;
         }
 
-        .content h2 {
-            color: var(--text-primary);
-        }
-
         .form-group {
             margin-bottom: 15px;
         }
@@ -144,29 +81,27 @@
             display: block;
             margin-bottom: 5px;
             font-weight: 600;
-            color: var(--text-primary);
+            color: #333;
         }
 
         input, select, textarea {
             width: 100%;
             padding: 12px;
-            border: 2px solid var(--border-color);
+            border: 2px solid #e0e0e0;
             border-radius: 8px;
             font-size: 16px;
             transition: border 0.3s;
-            background: var(--input-bg);
-            color: var(--text-primary);
         }
 
         input:focus, select:focus, textarea:focus {
             outline: none;
-            border-color: var(--primary-color);
+            border-color: #667eea;
         }
 
         button {
             width: 100%;
             padding: 14px;
-            background: var(--primary-color);
+            background: #667eea;
             color: white;
             border: none;
             border-radius: 8px;
@@ -177,7 +112,7 @@
         }
 
         button:hover {
-            background: var(--primary-hover);
+            background: #5568d3;
             transform: translateY(-2px);
         }
 
@@ -198,34 +133,25 @@
             background: #c82333;
         }
 
-        .btn-success {
-            background: #28a745;
-            margin-top: 10px;
-        }
-
-        .btn-success:hover {
-            background: #218838;
-        }
-
         .supplier-list, .product-list, .order-list {
             margin-top: 20px;
         }
 
         .item {
-            background: var(--item-bg);
+            background: #f8f9fa;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 10px;
-            border-left: 4px solid var(--primary-color);
+            border-left: 4px solid #667eea;
         }
 
         .item h3 {
-            color: var(--primary-color);
+            color: #667eea;
             margin-bottom: 5px;
         }
 
         .item p {
-            color: var(--text-secondary);
+            color: #666;
             margin: 5px 0;
         }
 
@@ -245,7 +171,7 @@
             display: flex;
             align-items: center;
             padding: 12px;
-            background: var(--item-bg);
+            background: #f8f9fa;
             border-radius: 8px;
             margin-bottom: 8px;
             gap: 12px;
@@ -265,7 +191,6 @@
 
         .checkbox-item label {
             flex: 1;
-            color: var(--text-primary);
         }
 
         .quantity-control {
@@ -285,9 +210,9 @@
         .quantity-btn {
             width: 32px;
             height: 32px;
-            border: 2px solid var(--primary-color);
-            background: var(--card-bg);
-            color: var(--primary-color);
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
             border-radius: 6px;
             font-size: 18px;
             font-weight: bold;
@@ -300,7 +225,7 @@
         }
 
         .quantity-btn:hover {
-            background: var(--primary-color);
+            background: #667eea;
             color: white;
             transform: scale(1.1);
         }
@@ -309,31 +234,31 @@
             min-width: 40px;
             text-align: center;
             font-weight: bold;
-            color: var(--primary-color);
+            color: #667eea;
             font-size: 16px;
         }
 
         .order-header {
-            background: var(--order-header-bg);
+            background: #e7f3ff;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 15px;
         }
 
         .order-header h3 {
-            color: var(--primary-color);
+            color: #667eea;
             margin-bottom: 5px;
         }
 
         .order-header p {
-            color: var(--text-secondary);
+            color: #666;
             font-size: 14px;
         }
 
         .empty-state {
             text-align: center;
             padding: 40px 20px;
-            color: var(--text-muted);
+            color: #999;
         }
 
         .empty-state svg {
@@ -344,12 +269,11 @@
         }
 
         .product-item {
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
+            background: #fff;
+            border: 2px solid #e0e0e0;
             padding: 10px;
             border-radius: 8px;
             margin-bottom: 8px;
-            color: var(--text-primary);
         }
 
         .stats {
@@ -360,69 +284,27 @@
 
         .stat-card {
             flex: 1;
-            background: var(--stat-bg);
+            background: #e7f3ff;
             padding: 15px;
             border-radius: 8px;
             text-align: center;
         }
 
         .stat-card h4 {
-            color: var(--primary-color);
+            color: #667eea;
             font-size: 24px;
         }
 
         .stat-card p {
-            color: var(--text-secondary);
+            color: #666;
             font-size: 12px;
             margin-top: 5px;
-        }
-
-        .filters {
-            background: var(--item-bg);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .filters h3 {
-            color: var(--primary-color);
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-
-        .filter-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .filter-row > div {
-            flex: 1;
-        }
-
-        .export-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .export-buttons button {
-            flex: 1;
-        }
-
-        small {
-            color: var(--text-secondary);
-        }
-
-        ul {
-            color: var(--text-primary);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
             <h1>📦 Gestión de Pedidos</h1>
             <div class="tabs">
                 <button class="tab active" onclick="showTab('suppliers')">Proveedores</button>
@@ -433,7 +315,7 @@
 
         <!-- PROVEEDORES -->
         <div id="suppliers" class="content active">
-            <h2 style="margin-bottom: 20px; color: var(--primary-color);">Gestión de Proveedores</h2>
+            <h2 style="margin-bottom: 20px; color: #667eea;">Gestión de Proveedores</h2>
             
             <div class="stats">
                 <div class="stat-card">
@@ -463,9 +345,9 @@
             </div>
 
             <div id="productFormView" style="display: none;">
-                <div style="background: var(--order-header-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                    <h3 style="color: var(--primary-color); margin-bottom: 5px;" id="currentSupplierName"></h3>
-                    <p style="color: var(--text-secondary); font-size: 14px;">Añadiendo productos</p>
+                <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h3 style="color: #667eea; margin-bottom: 5px;" id="currentSupplierName"></h3>
+                    <p style="color: #666; font-size: 14px;">Añadiendo productos</p>
                 </div>
 
                 <div class="form-group">
@@ -491,7 +373,7 @@
 
         <!-- HACER PEDIDO -->
         <div id="orders" class="content">
-            <h2 style="margin-bottom: 20px; color: var(--primary-color);">Hacer Pedido</h2>
+            <h2 style="margin-bottom: 20px; color: #667eea;">Hacer Pedido</h2>
             
             <div class="form-group">
                 <label>Seleccionar Proveedor</label>
@@ -504,15 +386,15 @@
             <button id="saveOrderBtn" onclick="saveOrder()" style="display: none;">✓ Guardar Pedido</button>
             
             <div id="sendOrderButtons" style="display: none; margin-top: 15px;">
-                <h3 style="color: var(--primary-color); margin-bottom: 10px;">Enviar Pedido</h3>
-                <button id="sendEmailBtn" onclick="sendOrderByEmail()" class="btn-secondary" style="margin-top: 0;">📧 Enviar por Email</button>
-                <button id="sendWhatsappBtn" onclick="sendOrderByWhatsapp()" class="btn-success">💬 Enviar por WhatsApp</button>
+                <h3 style="color: #667eea; margin-bottom: 10px;">Enviar Pedido</h3>
+                <button id="sendEmailBtn" onclick="sendOrderByEmail()" style="background: #6c757d; margin-top: 0;">📧 Enviar por Email</button>
+                <button id="sendWhatsappBtn" onclick="sendOrderByWhatsapp()" style="background: #28a745;">💬 Enviar por WhatsApp</button>
             </div>
         </div>
 
         <!-- HISTORIAL -->
         <div id="history" class="content">
-            <h2 style="margin-bottom: 20px; color: var(--primary-color);">Historial de Pedidos</h2>
+            <h2 style="margin-bottom: 20px; color: #667eea;">Historial de Pedidos</h2>
             
             <div class="stats">
                 <div class="stat-card">
@@ -521,33 +403,7 @@
                 </div>
             </div>
 
-            <!-- FILTROS -->
-            <div class="filters">
-                <h3>🔍 Filtros</h3>
-                <div class="form-group">
-                    <label>Proveedor</label>
-                    <select id="filterSupplier" onchange="applyFilters()">
-                        <option value="">Todos los proveedores</option>
-                    </select>
-                </div>
-                <div class="filter-row">
-                    <div class="form-group">
-                        <label>Desde</label>
-                        <input type="date" id="filterDateFrom" onchange="applyFilters()">
-                    </div>
-                    <div class="form-group">
-                        <label>Hasta</label>
-                        <input type="date" id="filterDateTo" onchange="applyFilters()">
-                    </div>
-                </div>
-                <button onclick="clearFilters()" class="btn-secondary">🔄 Limpiar Filtros</button>
-            </div>
-
-            <!-- BOTONES DE EXPORTACIÓN -->
-            <div class="export-buttons">
-                <button onclick="exportOrders('txt')">📄 Exportar TXT</button>
-                <button onclick="exportOrders('excel')" class="btn-success">📊 Exportar Excel</button>
-            </div>
+            <button onclick="exportOrders()" style="margin-bottom: 20px;">📥 Exportar Historial</button>
 
             <div id="historyList" class="order-list"></div>
         </div>
@@ -557,51 +413,24 @@
         // Estructura de datos
         let data = {
             suppliers: [],
-            orders: [],
-            theme: 'light'
+            orders: []
         };
 
         let currentSupplierId = null;
-        let filteredOrders = [];
 
         // Cargar datos del localStorage
         function loadData() {
             const saved = localStorage.getItem('gestionPedidos');
             if (saved) {
                 data = JSON.parse(saved);
-                // Aplicar tema guardado
-                if (data.theme === 'dark') {
-                    document.body.classList.add('dark-mode');
-                    document.querySelector('.theme-toggle').textContent = '☀️';
-                }
             }
-            filteredOrders = [...data.orders];
             updateUI();
         }
 
         // Guardar datos en localStorage
         function saveData() {
             localStorage.setItem('gestionPedidos', JSON.stringify(data));
-            filteredOrders = [...data.orders];
             updateUI();
-        }
-
-        // Alternar tema
-        function toggleTheme() {
-            const body = document.body;
-            const toggle = document.querySelector('.theme-toggle');
-            
-            if (body.classList.contains('dark-mode')) {
-                body.classList.remove('dark-mode');
-                toggle.textContent = '🌙';
-                data.theme = 'light';
-            } else {
-                body.classList.add('dark-mode');
-                toggle.textContent = '☀️';
-                data.theme = 'dark';
-            }
-            
-            localStorage.setItem('gestionPedidos', JSON.stringify(data));
         }
 
         // Añadir proveedor
@@ -666,7 +495,7 @@
             const container = document.getElementById('currentProductsList');
 
             if (!supplier || supplier.products.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Sin productos aún</p>';
+                container.innerHTML = '<p style="color: #999; text-align: center;">Sin productos aún</p>';
                 return;
             }
 
@@ -675,8 +504,8 @@
                 html += `
                     <div class="product-item">
                         <strong>${product.name}</strong>
-                        ${product.price ? `<span style="color: var(--primary-color); margin-left: 10px;">${product.price}</span>` : ''}
-                        ${product.notes ? `<br><small>${product.notes}</small>` : ''}
+                        ${product.price ? `<span style="color: #667eea; margin-left: 10px;">${product.price}</span>` : ''}
+                        ${product.notes ? `<br><small style="color: #666;">${product.notes}</small>` : ''}
                         <button onclick="deleteProductFromCurrent(${product.id})" 
                                 style="float: right; width: auto; padding: 5px 10px; font-size: 12px; background: #dc3545;">
                             ✕
@@ -753,15 +582,15 @@
                 return;
             }
 
-            let html = '<div style="margin-top: 20px;"><h3 style="margin-bottom: 15px; color: var(--primary-color);">Seleccionar Productos y Cantidades</h3>';
+            let html = '<div style="margin-top: 20px;"><h3 style="margin-bottom: 15px; color: #667eea;">Seleccionar Productos y Cantidades</h3>';
             supplier.products.forEach(product => {
                 html += `
                     <div class="checkbox-item">
                         <input type="checkbox" id="prod_${product.id}" value="${product.id}" onchange="toggleQuantity(${product.id})">
                         <label for="prod_${product.id}" style="cursor: pointer;">
                             <strong>${product.name}</strong>
-                            ${product.price ? `<br><small>${product.price}</small>` : ''}
-                            ${product.notes ? `<br><small>${product.notes}</small>` : ''}
+                            ${product.price ? `<br><small style="color: #666;">${product.price}</small>` : ''}
+                            ${product.notes ? `<br><small style="color: #999;">${product.notes}</small>` : ''}
                         </label>
                         <div class="quantity-control" id="qty_${product.id}">
                             <button class="quantity-btn" onclick="changeQuantity(${product.id}, -1); event.stopPropagation();">−</button>
@@ -827,8 +656,7 @@
                 supplierId: supplierId,
                 supplierName: supplier.name,
                 products: selectedProducts,
-                date: new Date().toLocaleString('es-ES'),
-                timestamp: Date.now()
+                date: new Date().toLocaleString('es-ES')
             };
 
             data.orders.push(order);
@@ -836,7 +664,6 @@
 
             // Mostrar botones de envío
             const sendButtons = document.getElementById('sendOrderButtons');
-            const supplier = data.suppliers.find(s => s.id === supplierId);
             
             if (supplier && (supplier.email || supplier.whatsapp)) {
                 sendButtons.style.display = 'block';
@@ -928,7 +755,7 @@
             message += `📅 Fecha: ${order.date}\n`;
             message += `📦 Proveedor: ${order.supplierName}\n\n`;
             message += `*PRODUCTOS:*\n`;
-            message += `${'\u2500'.repeat(30)}\n`;
+            message += `${'─'.repeat(30)}\n`;
             
             order.products.forEach(p => {
                 message += `\n• *${p.quantity}x* ${p.name}`;
@@ -937,7 +764,7 @@
                 message += `\n`;
             });
             
-            message += `\n${'\u2500'.repeat(30)}\n\n`;
+            message += `\n${'─'.repeat(30)}\n\n`;
             message += `Gracias 🙏`;
 
             // Limpiar el número de WhatsApp (quitar espacios, guiones, etc.)
@@ -949,68 +776,16 @@
             window.open(whatsappLink, '_blank');
         }
 
-        // Aplicar filtros
-        function applyFilters() {
-            const supplierFilter = document.getElementById('filterSupplier').value;
-            const dateFrom = document.getElementById('filterDateFrom').value;
-            const dateTo = document.getElementById('filterDateTo').value;
-
-            filteredOrders = data.orders.filter(order => {
-                // Filtro por proveedor
-                if (supplierFilter && order.supplierId !== parseInt(supplierFilter)) {
-                    return false;
-                }
-
-                // Filtro por fecha
-                if (dateFrom || dateTo) {
-                    const orderDate = new Date(order.timestamp);
-                    orderDate.setHours(0, 0, 0, 0);
-
-                    if (dateFrom) {
-                        const fromDate = new Date(dateFrom);
-                        if (orderDate < fromDate) return false;
-                    }
-
-                    if (dateTo) {
-                        const toDate = new Date(dateTo);
-                        if (orderDate > toDate) return false;
-                    }
-                }
-
-                return true;
-            });
-
-            updateHistoryList();
-        }
-
-        // Limpiar filtros
-        function clearFilters() {
-            document.getElementById('filterSupplier').value = '';
-            document.getElementById('filterDateFrom').value = '';
-            document.getElementById('filterDateTo').value = '';
-            filteredOrders = [...data.orders];
-            updateHistoryList();
-        }
-
         // Exportar pedidos
-        function exportOrders(format) {
-            if (filteredOrders.length === 0) {
+        function exportOrders() {
+            if (data.orders.length === 0) {
                 alert('No hay pedidos para exportar');
                 return;
             }
 
-            if (format === 'txt') {
-                exportToTxt();
-            } else if (format === 'excel') {
-                exportToExcel();
-            }
-        }
-
-        // Exportar a TXT
-        function exportToTxt() {
             let text = 'HISTORIAL DE PEDIDOS\n' + '='.repeat(50) + '\n\n';
             
-            filteredOrders.forEach(order => {
+            data.orders.forEach(order => {
                 text += `Fecha: ${order.date}\n`;
                 text += `Proveedor: ${order.supplierName}\n`;
                 text += `Productos:\n`;
@@ -1034,47 +809,6 @@
             a.click();
         }
 
-        // Exportar a Excel
-        function exportToExcel() {
-            const workbook = XLSX.utils.book_new();
-            
-            // Preparar datos para la hoja
-            const excelData = [];
-            excelData.push(['Fecha', 'Proveedor', 'Producto', 'Cantidad', 'Precio', 'Notas']);
-
-            filteredOrders.forEach(order => {
-                order.products.forEach(product => {
-                    excelData.push([
-                        order.date,
-                        order.supplierName,
-                        product.name,
-                        product.quantity || 1,
-                        product.price || '',
-                        product.notes || ''
-                    ]);
-                });
-            });
-
-            // Crear hoja de trabajo
-            const worksheet = XLSX.utils.aoa_to_sheet(excelData);
-            
-            // Ajustar ancho de columnas
-            worksheet['!cols'] = [
-                { wch: 20 }, // Fecha
-                { wch: 20 }, // Proveedor
-                { wch: 25 }, // Producto
-                { wch: 10 }, // Cantidad
-                { wch: 15 }, // Precio
-                { wch: 30 }  // Notas
-            ];
-
-            // Añadir hoja al libro
-            XLSX.utils.book_append_sheet(workbook, worksheet, 'Pedidos');
-
-            // Descargar archivo
-            XLSX.writeFile(workbook, `pedidos_${Date.now()}.xlsx`);
-        }
-
         // Actualizar interfaz
         function updateUI() {
             // Stats
@@ -1088,7 +822,7 @@
             if (data.suppliers.length === 0) {
                 supplierList.innerHTML = '<div class="empty-state">No hay proveedores. Añade uno arriba.</div>';
             } else {
-                let html = '<h3 style="margin: 20px 0 15px 0; color: var(--primary-color);">Mis Proveedores</h3>';
+                let html = '<h3 style="margin: 20px 0 15px 0; color: #667eea;">Mis Proveedores</h3>';
                 data.suppliers.forEach(supplier => {
                     html += `
                         <div class="item">
@@ -1108,8 +842,8 @@
                             html += `
                                 <div class="product-item">
                                     <strong>${product.name}</strong>
-                                    ${product.price ? `<span style="color: var(--primary-color); margin-left: 10px;">${product.price}</span>` : ''}
-                                    ${product.notes ? `<br><small>${product.notes}</small>` : ''}
+                                    ${product.price ? `<span style="color: #667eea; margin-left: 10px;">${product.price}</span>` : ''}
+                                    ${product.notes ? `<br><small style="color: #666;">${product.notes}</small>` : ''}
                                     <button onclick="deleteProduct(${supplier.id}, ${product.id})" 
                                             style="float: right; width: auto; padding: 5px 10px; font-size: 12px; background: #dc3545;">
                                         ✕
@@ -1134,27 +868,13 @@
             });
             orderSupplier.value = currentValue;
 
-            // Select de proveedores para filtros
-            const filterSupplier = document.getElementById('filterSupplier');
-            const currentFilterValue = filterSupplier.value;
-            filterSupplier.innerHTML = '<option value="">Todos los proveedores</option>';
-            data.suppliers.forEach(supplier => {
-                filterSupplier.innerHTML += `<option value="${supplier.id}">${supplier.name}</option>`;
-            });
-            filterSupplier.value = currentFilterValue;
-
             // Historial
-            updateHistoryList();
-        }
-
-        // Actualizar lista de historial
-        function updateHistoryList() {
             const historyList = document.getElementById('historyList');
-            if (filteredOrders.length === 0) {
+            if (data.orders.length === 0) {
                 historyList.innerHTML = '<div class="empty-state">No hay pedidos guardados</div>';
             } else {
                 let html = '';
-                [...filteredOrders].reverse().forEach(order => {
+                [...data.orders].reverse().forEach(order => {
                     html += `
                         <div class="item">
                             <div class="order-header">
@@ -1167,7 +887,7 @@
                     order.products.forEach(p => {
                         html += `<li>`;
                         if (p.quantity) {
-                            html += `<strong style="color: var(--primary-color);">${p.quantity}x</strong> `;
+                            html += `<strong style="color: #667eea;">${p.quantity}x</strong> `;
                         }
                         html += `${p.name}`;
                         if (p.price) html += ` - ${p.price}`;
@@ -1188,7 +908,6 @@
             if (confirm('¿Eliminar este pedido del historial?')) {
                 data.orders = data.orders.filter(o => o.id !== orderId);
                 saveData();
-                applyFilters();
             }
         }
 
