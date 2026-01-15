@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Proveedores y Pedidos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding-bottom: 70px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .content {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .supplier-list, .product-list, .order-list {
+            margin-top: 20px;
+        }
+
+        .item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .item h3 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .item p {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .item-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .item-actions button {
+            width: auto;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            gap: 12px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .checkbox-item.checked {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .checkbox-item label {
+            flex: 1;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.3;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .quantity-control.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .quantity-btn {
+            width: 32px;
+            height: 32px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: all 0.2s;
+        }
+
+        .quantity-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .quantity-display {
+            min-width: 40px;
+            text-align: center;
+            font-weight: bold;
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .order-header {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .order-header h3 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .order-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .product-item {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card h4 {
+            color: #667eea;
+            font-size: 24px;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 Gestión de Pedidos</h1>
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('suppliers')">Proveedores</button>
+                <button class="tab" onclick="showTab('orders')">Hacer Pedido</button>
+                <button class="tab" onclick="showTab('history')">Historial</button>
+            </div>
+        </div>
+
+        <!-- PROVEEDORES -->
+        <div id="suppliers" class="content active">
+            <h2 style="margin-bottom: 20px; color: #667eea;">Gestión de Proveedores</h2>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <h4 id="supplierCount">0</h4>
+                    <p>Proveedores</p>
+                </div>
+                <div class="stat-card">
+                    <h4 id="productCount">0</h4>
+                    <p>Productos</p>
+                </div>
+            </div>
+
+            <div id="supplierFormView">
+                <div class="form-group">
+                    <label>Nombre del Proveedor</label>
+                    <input type="text" id="supplierName" placeholder="Ej: Frutas García">
+                </div>
+                <div class="form-group">
+                    <label>Contacto (opcional)</label>
+                    <input type="text" id="supplierContact" placeholder="Teléfono o email">
+                </div>
+                <button onclick="addSupplier()">➕ Añadir Proveedor</button>
+            </div>
+
+            <div id="productFormView" style="display: none;">
+                <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h3 style="color: #667eea; margin-bottom: 5px;" id="currentSupplierName"></h3>
+                    <p style="color: #666; font-size: 14px;">Añadiendo productos</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Nombre del Producto *</label>
+                    <input type="text" id="productName" placeholder="Ej: Tomates">
+                </div>
+                <div class="form-group">
+                    <label>Precio (opcional)</label>
+                    <input type="text" id="productPrice" placeholder="Ej: 2.50€/kg">
+                </div>
+                <div class="form-group">
+                    <label>Notas (opcional)</label>
+                    <textarea id="productNotes" placeholder="Ej: Pedir en cajas de 10kg" rows="2"></textarea>
+                </div>
+                <button onclick="addProduct()">➕ Añadir Producto</button>
+                <button onclick="finishAddingProducts()" class="btn-secondary">✓ Terminar</button>
+
+                <div id="currentProductsList" style="margin-top: 20px;"></div>
+            </div>
+
+            <div id="supplierList" class="supplier-list"></div>
+        </div>
+
+        <!-- HACER PEDIDO -->
+        <div id="orders" class="content">
+            <h2 style="margin-bottom: 20px; color: #667eea;">Hacer Pedido</h2>
+            
+            <div class="form-group">
+                <label>Seleccionar Proveedor</label>
+                <select id="orderSupplier" onchange="loadProductsForOrder()">
+                    <option value="">-- Seleccionar --</option>
+                </select>
+            </div>
+
+            <div id="orderProducts"></div>
+            <button id="saveOrderBtn" onclick="saveOrder()" style="display: none;">✓ Guardar Pedido</button>
+        </div>
+
+        <!-- HISTORIAL -->
+        <div id="history" class="content">
+            <h2 style="margin-bottom: 20px; color: #667eea;">Historial de Pedidos</h2>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <h4 id="orderCount">0</h4>
+                    <p>Pedidos</p>
+                </div>
+            </div>
+
+            <button onclick="exportOrders()" style="margin-bottom: 20px;">📥 Exportar Historial</button>
+
+            <div id="historyList" class="order-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // Estructura de datos
+        let data = {
+            suppliers: [],
+            orders: []
+        };
+
+        let currentSupplierId = null;
+
+        // Cargar datos del localStorage
+        function loadData() {
+            const saved = localStorage.getItem('gestionPedidos');
+            if (saved) {
+                data = JSON.parse(saved);
+            }
+            updateUI();
+        }
+
+        // Guardar datos en localStorage
+        function saveData() {
+            localStorage.setItem('gestionPedidos', JSON.stringify(data));
+            updateUI();
+        }
+
+        // Añadir proveedor
+        function addSupplier() {
+            const name = document.getElementById('supplierName').value.trim();
+            const contact = document.getElementById('supplierContact').value.trim();
+
+            if (!name) {
+                alert('Por favor, ingresa el nombre del proveedor');
+                return;
+            }
+
+            const supplier = {
+                id: Date.now(),
+                name: name,
+                contact: contact,
+                products: []
+            };
+
+            data.suppliers.push(supplier);
+            document.getElementById('supplierName').value = '';
+            document.getElementById('supplierContact').value = '';
+            saveData();
+        }
+
+        // Añadir producto
+        function addProduct() {
+            const name = document.getElementById('productName').value.trim();
+            const price = document.getElementById('productPrice').value.trim();
+            const notes = document.getElementById('productNotes').value.trim();
+
+            if (!name) {
+                alert('Por favor, ingresa el nombre del producto');
+                return;
+            }
+
+            const supplier = data.suppliers.find(s => s.id === currentSupplierId);
+            if (supplier) {
+                const product = {
+                    id: Date.now(),
+                    name: name,
+                    price: price,
+                    notes: notes
+                };
+
+                supplier.products.push(product);
+                document.getElementById('productName').value = '';
+                document.getElementById('productPrice').value = '';
+                document.getElementById('productNotes').value = '';
+                updateCurrentProductsList();
+                saveData();
+            }
+        }
+
+        // Actualizar lista de productos actual
+        function updateCurrentProductsList() {
+            const supplier = data.suppliers.find(s => s.id === currentSupplierId);
+            const container = document.getElementById('currentProductsList');
+
+            if (!supplier || supplier.products.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center;">Sin productos aún</p>';
+                return;
+            }
+
+            let html = '';
+            supplier.products.forEach(product => {
+                html += `
+                    <div class="product-item">
+                        <strong>${product.name}</strong>
+                        ${product.price ? `<span style="color: #667eea; margin-left: 10px;">${product.price}</span>` : ''}
+                        ${product.notes ? `<br><small style="color: #666;">${product.notes}</small>` : ''}
+                        <button onclick="deleteProductFromCurrent(${product.id})" 
+                                style="float: right; width: auto; padding: 5px 10px; font-size: 12px; background: #dc3545;">
+                            ✕
+                        </button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // Eliminar producto de la lista actual
+        function deleteProductFromCurrent(productId) {
+            const supplier = data.suppliers.find(s => s.id === currentSupplierId);
+            if (supplier) {
+                supplier.products = supplier.products.filter(p => p.id !== productId);
+                updateCurrentProductsList();
+                saveData();
+            }
+        }
+
+        // Terminar de añadir productos
+        function finishAddingProducts() {
+            document.getElementById('productFormView').style.display = 'none';
+            document.getElementById('supplierFormView').style.display = 'block';
+            currentSupplierId = null;
+            updateUI();
+        }
+
+        // Editar productos de proveedor
+        function editSupplierProducts(supplierId) {
+            currentSupplierId = supplierId;
+            const supplier = data.suppliers.find(s => s.id === supplierId);
+            
+            document.getElementById('supplierFormView').style.display = 'none';
+            document.getElementById('productFormView').style.display = 'block';
+            document.getElementById('currentSupplierName').textContent = supplier.name;
+            
+            updateCurrentProductsList();
+        }
+
+        // Eliminar proveedor
+        function deleteSupplier(supplierId) {
+            if (confirm('¿Eliminar este proveedor y todos sus productos?')) {
+                data.suppliers = data.suppliers.filter(s => s.id !== supplierId);
+                saveData();
+            }
+        }
+
+        // Eliminar producto
+        function deleteProduct(supplierId, productId) {
+            const supplier = data.suppliers.find(s => s.id === supplierId);
+            if (supplier) {
+                supplier.products = supplier.products.filter(p => p.id !== productId);
+                saveData();
+            }
+        }
+
+        // Cargar productos para pedido
+        function loadProductsForOrder() {
+            const supplierId = parseInt(document.getElementById('orderSupplier').value);
+            const container = document.getElementById('orderProducts');
+            const btn = document.getElementById('saveOrderBtn');
+
+            if (!supplierId) {
+                container.innerHTML = '';
+                btn.style.display = 'none';
+                return;
+            }
+
+            const supplier = data.suppliers.find(s => s.id === supplierId);
+            if (!supplier || supplier.products.length === 0) {
+                container.innerHTML = '<div class="empty-state">Este proveedor no tiene productos. Ve a la pestaña Proveedores para añadirlos.</div>';
+                btn.style.display = 'none';
+                return;
+            }
+
+            let html = '<div style="margin-top: 20px;"><h3 style="margin-bottom: 15px; color: #667eea;">Seleccionar Productos y Cantidades</h3>';
+            supplier.products.forEach(product => {
+                html += `
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="prod_${product.id}" value="${product.id}" onchange="toggleQuantity(${product.id})">
+                        <label for="prod_${product.id}" style="cursor: pointer;">
+                            <strong>${product.name}</strong>
+                            ${product.price ? `<br><small style="color: #666;">${product.price}</small>` : ''}
+                            ${product.notes ? `<br><small style="color: #999;">${product.notes}</small>` : ''}
+                        </label>
+                        <div class="quantity-control" id="qty_${product.id}">
+                            <button class="quantity-btn" onclick="changeQuantity(${product.id}, -1); event.stopPropagation();">−</button>
+                            <div class="quantity-display" id="qtyval_${product.id}">1</div>
+                            <button class="quantity-btn" onclick="changeQuantity(${product.id}, 1); event.stopPropagation();">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            container.innerHTML = html;
+            btn.style.display = 'block';
+        }
+
+        // Cambiar cantidad
+        function changeQuantity(productId, delta) {
+            const display = document.getElementById(`qtyval_${productId}`);
+            let current = parseInt(display.textContent);
+            current = Math.max(1, current + delta);
+            display.textContent = current;
+        }
+
+        // Activar/desactivar controles de cantidad
+        function toggleQuantity(productId) {
+            const checkbox = document.getElementById(`prod_${productId}`);
+            const qtyControl = document.getElementById(`qty_${productId}`);
+            
+            if (checkbox.checked) {
+                qtyControl.classList.add('active');
+            } else {
+                qtyControl.classList.remove('active');
+                document.getElementById(`qtyval_${productId}`).textContent = '1';
+            }
+        }
+
+        // Guardar pedido
+        function saveOrder() {
+            const supplierId = parseInt(document.getElementById('orderSupplier').value);
+            if (!supplierId) return;
+
+            const supplier = data.suppliers.find(s => s.id === supplierId);
+            const selectedProducts = [];
+
+            supplier.products.forEach(product => {
+                const checkbox = document.getElementById(`prod_${product.id}`);
+                if (checkbox && checkbox.checked) {
+                    const quantity = parseInt(document.getElementById(`qtyval_${product.id}`).textContent);
+                    selectedProducts.push({
+                        ...product,
+                        quantity: quantity
+                    });
+                }
+            });
+
+            if (selectedProducts.length === 0) {
+                alert('Selecciona al menos un producto');
+                return;
+            }
+
+            const order = {
+                id: Date.now(),
+                supplierId: supplierId,
+                supplierName: supplier.name,
+                products: selectedProducts,
+                date: new Date().toLocaleString('es-ES')
+            };
+
+            data.orders.push(order);
+            saveData();
+
+            alert('✅ Pedido guardado correctamente');
+            document.getElementById('orderSupplier').value = '';
+            document.getElementById('orderProducts').innerHTML = '';
+            document.getElementById('saveOrderBtn').style.display = 'none';
+        }
+
+        // Exportar pedidos
+        function exportOrders() {
+            if (data.orders.length === 0) {
+                alert('No hay pedidos para exportar');
+                return;
+            }
+
+            let text = 'HISTORIAL DE PEDIDOS\n' + '='.repeat(50) + '\n\n';
+            
+            data.orders.forEach(order => {
+                text += `Fecha: ${order.date}\n`;
+                text += `Proveedor: ${order.supplierName}\n`;
+                text += `Productos:\n`;
+                order.products.forEach(p => {
+                    text += `  - `;
+                    if (p.quantity) {
+                        text += `${p.quantity}x `;
+                    }
+                    text += p.name;
+                    if (p.price) text += ` (${p.price})`;
+                    text += '\n';
+                });
+                text += '\n' + '-'.repeat(50) + '\n\n';
+            });
+
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pedidos_${Date.now()}.txt`;
+            a.click();
+        }
+
+        // Actualizar interfaz
+        function updateUI() {
+            // Stats
+            document.getElementById('supplierCount').textContent = data.suppliers.length;
+            document.getElementById('productCount').textContent = 
+                data.suppliers.reduce((sum, s) => sum + s.products.length, 0);
+            document.getElementById('orderCount').textContent = data.orders.length;
+
+            // Lista de proveedores
+            const supplierList = document.getElementById('supplierList');
+            if (data.suppliers.length === 0) {
+                supplierList.innerHTML = '<div class="empty-state">No hay proveedores. Añade uno arriba.</div>';
+            } else {
+                let html = '<h3 style="margin: 20px 0 15px 0; color: #667eea;">Mis Proveedores</h3>';
+                data.suppliers.forEach(supplier => {
+                    html += `
+                        <div class="item">
+                            <h3>${supplier.name}</h3>
+                            ${supplier.contact ? `<p>📞 ${supplier.contact}</p>` : ''}
+                            <p><strong>${supplier.products.length}</strong> productos</p>
+                            <div class="item-actions">
+                                <button onclick="editSupplierProducts(${supplier.id})">📝 Productos</button>
+                                <button class="btn-danger" onclick="deleteSupplier(${supplier.id})">🗑️</button>
+                            </div>
+                    `;
+
+                    if (supplier.products.length > 0) {
+                        html += '<div style="margin-top: 10px;">';
+                        supplier.products.forEach(product => {
+                            html += `
+                                <div class="product-item">
+                                    <strong>${product.name}</strong>
+                                    ${product.price ? `<span style="color: #667eea; margin-left: 10px;">${product.price}</span>` : ''}
+                                    ${product.notes ? `<br><small style="color: #666;">${product.notes}</small>` : ''}
+                                    <button onclick="deleteProduct(${supplier.id}, ${product.id})" 
+                                            style="float: right; width: auto; padding: 5px 10px; font-size: 12px; background: #dc3545;">
+                                        ✕
+                                    </button>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                    }
+
+                    html += '</div>';
+                });
+                supplierList.innerHTML = html;
+            }
+
+            // Select de proveedores para pedidos
+            const orderSupplier = document.getElementById('orderSupplier');
+            const currentValue = orderSupplier.value;
+            orderSupplier.innerHTML = '<option value="">-- Seleccionar --</option>';
+            data.suppliers.forEach(supplier => {
+                orderSupplier.innerHTML += `<option value="${supplier.id}">${supplier.name}</option>`;
+            });
+            orderSupplier.value = currentValue;
+
+            // Historial
+            const historyList = document.getElementById('historyList');
+            if (data.orders.length === 0) {
+                historyList.innerHTML = '<div class="empty-state">No hay pedidos guardados</div>';
+            } else {
+                let html = '';
+                [...data.orders].reverse().forEach(order => {
+                    html += `
+                        <div class="item">
+                            <div class="order-header">
+                                <h3>📦 ${order.supplierName}</h3>
+                                <p>🕒 ${order.date}</p>
+                            </div>
+                            <p><strong>Productos:</strong></p>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                    `;
+                    order.products.forEach(p => {
+                        html += `<li>`;
+                        if (p.quantity) {
+                            html += `<strong style="color: #667eea;">${p.quantity}x</strong> `;
+                        }
+                        html += `${p.name}`;
+                        if (p.price) html += ` - ${p.price}`;
+                        html += '</li>';
+                    });
+                    html += `
+                            </ul>
+                            <button class="btn-danger" onclick="deleteOrder(${order.id})" style="margin-top: 10px;">🗑️ Eliminar</button>
+                        </div>
+                    `;
+                });
+                historyList.innerHTML = html;
+            }
+        }
+
+        // Eliminar pedido
+        function deleteOrder(orderId) {
+            if (confirm('¿Eliminar este pedido del historial?')) {
+                data.orders = data.orders.filter(o => o.id !== orderId);
+                saveData();
+            }
+        }
+
+        // Cambiar pestaña
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+
+            // Si cambiamos de pestaña, volver a la vista de proveedores
+            if (tabName === 'suppliers' && currentSupplierId !== null) {
+                finishAddingProducts();
+            }
+        }
+
+        // Inicializar
+        loadData();
+    </script>
+</body>
+</html>
