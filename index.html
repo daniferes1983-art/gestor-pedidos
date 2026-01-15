@@ -1020,10 +1020,10 @@
                 return;
             }
 
-            // Crear el mensaje
+            // Crear el mensaje (sin emojis para mejor compatibilidad)
             let message = `*PEDIDO*\n\n`;
-            message += `📅 Fecha: ${order.date}\n`;
-            message += `📦 Proveedor: ${order.supplierName}\n\n`;
+            message += `Fecha: ${order.date}\n`;
+            message += `Proveedor: ${order.supplierName}\n\n`;
             message += `*Productos:*\n`;
             order.products.forEach(p => {
                 message += `• ${p.quantity || 1}x *${p.name}*`;
@@ -1031,7 +1031,7 @@
                 if (p.notes) message += ` - _${p.notes}_`;
                 message += `\n`;
             });
-            message += `\nGracias 🙏`;
+            message += `\nGracias!`;
 
             // Limpiar número de WhatsApp (quitar espacios y caracteres especiales excepto +)
             const phoneNumber = supplier.whatsapp.replace(/[^\d+]/g, '');
@@ -1140,7 +1140,23 @@
                     });
                     html += `
                             </ul>
-                            <button class="btn-danger" onclick="deleteOrder(${order.id})" style="margin-top: 10px;">🗑️ Eliminar</button>
+                            <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                    `;
+                    
+                    // Botón de Email si el proveedor tiene email
+                    const supplier = data.suppliers.find(s => s.id === order.supplierId);
+                    if (supplier && supplier.email) {
+                        html += `<button class="btn-primary" onclick="sendByEmail(${order.id})" style="background: #2196F3;">📧 Enviar por Email</button>`;
+                    }
+                    
+                    // Botón de WhatsApp si el proveedor tiene WhatsApp
+                    if (supplier && supplier.whatsapp) {
+                        html += `<button class="btn-primary" onclick="sendByWhatsApp(${order.id})" style="background: #25D366;">💬 Enviar por WhatsApp</button>`;
+                    }
+                    
+                    html += `
+                                <button class="btn-danger" onclick="deleteOrder(${order.id})">🗑️ Eliminar</button>
+                            </div>
                         </div>
                     `;
                 });
