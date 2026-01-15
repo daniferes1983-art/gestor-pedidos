@@ -452,8 +452,12 @@
                     <input type="text" id="supplierName" placeholder="Ej: Frutas García">
                 </div>
                 <div class="form-group">
-                    <label>Contacto (opcional)</label>
-                    <input type="text" id="supplierContact" placeholder="Teléfono o email">
+                    <label>Email (opcional)</label>
+                    <input type="email" id="supplierEmail" placeholder="ejemplo@email.com">
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp (opcional)</label>
+                    <input type="tel" id="supplierWhatsapp" placeholder="+34 600 123 456">
                 </div>
                 <button onclick="addSupplier()">➕ Añadir Proveedor</button>
             </div>
@@ -498,6 +502,12 @@
 
             <div id="orderProducts"></div>
             <button id="saveOrderBtn" onclick="saveOrder()" style="display: none;">✓ Guardar Pedido</button>
+            
+            <div id="sendOrderButtons" style="display: none; margin-top: 15px;">
+                <h3 style="color: var(--primary-color); margin-bottom: 10px;">Enviar Pedido</h3>
+                <button id="sendEmailBtn" onclick="sendOrderByEmail()" class="btn-secondary" style="margin-top: 0;">📧 Enviar por Email</button>
+                <button id="sendWhatsappBtn" onclick="sendOrderByWhatsapp()" class="btn-success">💬 Enviar por WhatsApp</button>
+            </div>
         </div>
 
         <!-- HISTORIAL -->
@@ -597,7 +607,8 @@
         // Añadir proveedor
         function addSupplier() {
             const name = document.getElementById('supplierName').value.trim();
-            const contact = document.getElementById('supplierContact').value.trim();
+            const email = document.getElementById('supplierEmail').value.trim();
+            const whatsapp = document.getElementById('supplierWhatsapp').value.trim();
 
             if (!name) {
                 alert('Por favor, ingresa el nombre del proveedor');
@@ -607,13 +618,15 @@
             const supplier = {
                 id: Date.now(),
                 name: name,
-                contact: contact,
+                email: email,
+                whatsapp: whatsapp,
                 products: []
             };
 
             data.suppliers.push(supplier);
             document.getElementById('supplierName').value = '';
-            document.getElementById('supplierContact').value = '';
+            document.getElementById('supplierEmail').value = '';
+            document.getElementById('supplierWhatsapp').value = '';
             saveData();
         }
 
@@ -820,10 +833,119 @@
             data.orders.push(order);
             saveData();
 
+            // Mostrar botones de envío
+            const sendButtons = document.getElementById('sendOrderButtons');
+            const supplier = data.suppliers.find(s => s.id === supplierId);
+            
+            if (supplier && (supplier.email || supplier.whatsapp)) {
+                sendButtons.style.display = 'block';
+                
+                // Habilitar/deshabilitar botones según disponibilidad
+                const emailBtn = document.getElementById('sendEmailBtn');
+                const whatsappBtn = document.getElementById('sendWhatsappBtn');
+                
+                if (supplier.email) {
+                    emailBtn.disabled = false;
+                    emailBtn.style.opacity = '1';
+                } else {
+                    emailBtn.disabled = true;
+                    emailBtn.style.opacity = '0.5';
+                }
+                
+                if (supplier.whatsapp) {
+                    whatsappBtn.disabled = false;
+                    whatsappBtn.style.opacity = '1';
+                } else {
+                    whatsappBtn.disabled = true;
+                    whatsappBtn.style.opacity = '0.5';
+                }
+                
+                // Guardar el último pedido para envío
+                window.lastOrder = order;
+            }
+
             alert('✅ Pedido guardado correctamente');
-            document.getElementById('orderSupplier').value = '';
-            document.getElementById('orderProducts').innerHTML = '';
             document.getElementById('saveOrderBtn').style.display = 'none';
+        }
+
+        // Enviar pedido por Email
+        function sendOrderByEmail() {
+            if (!window.lastOrder) {
+                alert('No hay pedido para enviar');
+                return;
+            }
+
+            const order = window.lastOrder;
+            const supplier = data.suppliers.find(s => s.id === order.supplierId);
+            
+            if (!supplier || !supplier.email) {
+                alert('Este proveedor no tiene email configurado');
+                return;
+            }
+
+            // Crear el cuerpo del email
+            let body = `Hola,\n\nLe enviamos nuestro pedido:\n\n`;
+            body += `Fecha: ${order.date}\n`;
+            body += `Proveedor: ${order.supplierName}\n\n`;
+            body += `PRODUCTOS:\n`;
+            body += `${'='.repeat(40)}\n`;
+            
+            order.products.forEach(p => {
+                body += `\n- ${p.quantity}x ${p.name}`;
+                if (p.price) body += ` (${p.price})`;
+                if (p.notes) body += `\n  Nota: ${p.notes}`;
+                body += `\n`;
+            });
+            
+            body += `\n${'='.repeat(40)}\n\n`;
+            body += `Gracias por su atención.\n\nSaludos cordiales`;
+
+            // Crear el enlace mailto
+            const subject = `Pedido - ${order.supplierName} - ${new Date().toLocaleDateString('es-ES')}`;
+            const mailtoLink = `mailto:${supplier.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            
+            window.location.href = mailtoLink;
+        }
+
+        // Enviar pedido por WhatsApp
+        function sendOrderByWhatsapp() {
+            if (!window.lastOrder) {
+                alert('No hay pedido para enviar');
+                return;
+            }
+
+            const order = window.lastOrder;
+            const supplier = data.suppliers.find(s => s.id === order.supplierId);
+            
+            if (!supplier || !supplier.whatsapp) {
+                alert('Este proveedor no tiene WhatsApp configurado');
+                return;
+            }
+
+            // Crear el mensaje de WhatsApp
+            let message = `*PEDIDO*\n\n`;
+            message += `📅 Fecha: ${order.date}\n`;
+            message += `📦 Proveedor: ${order.supplierName}\n\n`;
+            message += `*PRODUCTOS:*\n`;
+            message += `${'\u2500'.repeat(30)}\n`;
+            
+            order.products.forEach(p => {
+                message += `\n• *${p.quantity}x* ${p.name}`;
+                if (p.price) message += ` _(${p.price})_`;
+                if (p.notes) message += `\n  📝 ${p.notes}`;
+                message += `\n`;
+            });
+            
+            message += `\n${'\u2500'.repeat(30)}\n\n`;
+            message += `Gracias 🙏`;
+
+            // Limpiar el número de WhatsApp (quitar espacios, guiones, etc.)
+            const cleanNumber = supplier.whatsapp.replace(/[^0-9+]/g, '');
+            
+            // Crear el enlace de WhatsApp
+            const whatsappLink = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
+            
+            window.open(whatsappLink, '_blank');
         }
 
         // Aplicar filtros
@@ -970,7 +1092,8 @@
                     html += `
                         <div class="item">
                             <h3>${supplier.name}</h3>
-                            ${supplier.contact ? `<p>📞 ${supplier.contact}</p>` : ''}
+                            ${supplier.email ? `<p>📧 ${supplier.email}</p>` : ''}
+                            ${supplier.whatsapp ? `<p>💬 ${supplier.whatsapp}</p>` : ''}
                             <p><strong>${supplier.products.length}</strong> productos</p>
                             <div class="item-actions">
                                 <button onclick="editSupplierProducts(${supplier.id})">📝 Productos</button>
