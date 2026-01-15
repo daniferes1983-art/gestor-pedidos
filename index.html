@@ -417,6 +417,17 @@
         ul {
             color: var(--text-primary);
         }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
     </style>
 </head>
 <body>
@@ -462,6 +473,39 @@
                     <label>CIF / Número de Cliente (opcional)</label>
                     <input type="text" id="supplierCif" placeholder="Ej: B12345678 o CLI-001">
                 </div>
+                <div class="form-group">
+                    <label>📅 Días de Pedido (opcional)</label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px;">
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px; background: var(--card-bg); border-radius: 6px; border: 2px solid var(--border-color); transition: all 0.2s;">
+                            <input type="checkbox" id="day_1" value="1" style="cursor: pointer;">
+                            <span>Lunes</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px; background: var(--card-bg); border-radius: 6px; border: 2px solid var(--border-color); transition: all 0.2s;">
+                            <input type="checkbox" id="day_2" value="2" style="cursor: pointer;">
+                            <span>Martes</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px; background: var(--card-bg); border-radius: 6px; border: 2px solid var(--border-color); transition: all 0.2s;">
+                            <input type="checkbox" id="day_3" value="3" style="cursor: pointer;">
+                            <span>Miércoles</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px; background: var(--card-bg); border-radius: 6px; border: 2px solid var(--border-color); transition: all 0.2s;">
+                            <input type="checkbox" id="day_4" value="4" style="cursor: pointer;">
+                            <span>Jueves</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px; background: var(--card-bg); border-radius: 6px; border: 2px solid var(--border-color); transition: all 0.2s;">
+                            <input type="checkbox" id="day_5" value="5" style="cursor: pointer;">
+                            <span>Viernes</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px; background: var(--card-bg); border-radius: 6px; border: 2px solid var(--border-color); transition: all 0.2s;">
+                            <input type="checkbox" id="day_6" value="6" style="cursor: pointer;">
+                            <span>Sábado</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px; background: var(--card-bg); border-radius: 6px; border: 2px solid var(--border-color); transition: all 0.2s;">
+                            <input type="checkbox" id="day_0" value="0" style="cursor: pointer;">
+                            <span>Domingo</span>
+                        </label>
+                    </div>
+                </div>
                 <button onclick="addSupplier()">➞️ Añadir Proveedor</button>
             </div>
 
@@ -495,6 +539,9 @@
         <!-- HACER PEDIDO -->
         <div id="orders" class="content">
             <h2 style="margin-bottom: 20px; color: var(--primary-color);">Hacer Pedido</h2>
+            
+            <!-- Recordatorios -->
+            <div id="remindersSection" style="margin-bottom: 20px;"></div>
             
             <div class="form-group">
                 <label>Seleccionar Proveedor</label>
@@ -607,6 +654,15 @@
             const email = document.getElementById('supplierEmail').value.trim();
             const whatsapp = document.getElementById('supplierWhatsapp').value.trim();
             const cif = document.getElementById('supplierCif').value.trim();
+            
+            // Obtener días seleccionados
+            const orderDays = [];
+            for (let i = 0; i <= 6; i++) {
+                const checkbox = document.getElementById(`day_${i}`);
+                if (checkbox && checkbox.checked) {
+                    orderDays.push(parseInt(checkbox.value));
+                }
+            }
 
             if (!name) {
                 alert('Por favor, ingresa el nombre del proveedor');
@@ -619,6 +675,7 @@
                 email: email,
                 whatsapp: whatsapp,
                 cif: cif,
+                orderDays: orderDays,
                 products: []
             };
 
@@ -627,6 +684,13 @@
             document.getElementById('supplierEmail').value = '';
             document.getElementById('supplierWhatsapp').value = '';
             document.getElementById('supplierCif').value = '';
+            
+            // Limpiar checkboxes
+            for (let i = 0; i <= 6; i++) {
+                const checkbox = document.getElementById(`day_${i}`);
+                if (checkbox) checkbox.checked = false;
+            }
+            
             saveData();
             updateUI();
         }
@@ -727,6 +791,14 @@
             document.getElementById('supplierEmail').value = supplier.email || '';
             document.getElementById('supplierWhatsapp').value = supplier.whatsapp || '';
             document.getElementById('supplierCif').value = supplier.cif || '';
+            
+            // Marcar los días de pedido
+            for (let i = 0; i <= 6; i++) {
+                const checkbox = document.getElementById(`day_${i}`);
+                if (checkbox) {
+                    checkbox.checked = supplier.orderDays && supplier.orderDays.includes(i);
+                }
+            }
 
             // Cambiar el botón de "Añadir" a "Actualizar"
             const addButton = document.querySelector('#supplierFormView button');
@@ -745,6 +817,15 @@
             const email = document.getElementById('supplierEmail').value.trim();
             const whatsapp = document.getElementById('supplierWhatsapp').value.trim();
             const cif = document.getElementById('supplierCif').value.trim();
+            
+            // Obtener días seleccionados
+            const orderDays = [];
+            for (let i = 0; i <= 6; i++) {
+                const checkbox = document.getElementById(`day_${i}`);
+                if (checkbox && checkbox.checked) {
+                    orderDays.push(parseInt(checkbox.value));
+                }
+            }
 
             if (!name) {
                 alert('Por favor, ingresa el nombre del proveedor');
@@ -757,12 +838,19 @@
                 supplier.email = email;
                 supplier.whatsapp = whatsapp;
                 supplier.cif = cif;
+                supplier.orderDays = orderDays;
 
                 // Limpiar formulario
                 document.getElementById('supplierName').value = '';
                 document.getElementById('supplierEmail').value = '';
                 document.getElementById('supplierWhatsapp').value = '';
                 document.getElementById('supplierCif').value = '';
+                
+                // Limpiar checkboxes
+                for (let i = 0; i <= 6; i++) {
+                    const checkbox = document.getElementById(`day_${i}`);
+                    if (checkbox) checkbox.checked = false;
+                }
 
                 // Restaurar botón de "Añadir"
                 const addButton = document.querySelector('#supplierFormView button');
@@ -1126,6 +1214,7 @@
                             ${supplier.email ? `<p>📧 ${supplier.email}</p>` : ''}
                             ${supplier.whatsapp ? `<p>💬 ${supplier.whatsapp}</p>` : ''}
                             ${supplier.cif ? `<p>🏢 CIF/Cliente: ${supplier.cif}</p>` : ''}
+                            ${supplier.orderDays && supplier.orderDays.length > 0 ? `<p>📅 Pedidos: ${supplier.orderDays.map(d => getDayName(d)).join(', ')}</p>` : ''}
                             <p><strong>${supplier.products.length}</strong> productos</p>
                             <div class="item-actions">
                                 <button onclick="editSupplier(${supplier.id})" style="background: #FF9800;">✏️ Editar</button>
@@ -1177,6 +1266,10 @@
 
             // Historial
             updateHistoryList();
+            
+            // Actualizar recordatorios
+            showReminders();
+            updateRemindersBadge();
         }
 
         // Actualizar lista de historial
@@ -1237,6 +1330,150 @@
                 data.orders = data.orders.filter(o => o.id !== orderId);
                 saveData();
                 applyFilters();
+            }
+        }
+
+        // Obtener recordatorios de hoy y mañana
+        function getReminders() {
+            const today = new Date().getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
+            const tomorrow = (today + 1) % 7;
+            
+            const reminders = {
+                today: [],
+                tomorrow: []
+            };
+            
+            data.suppliers.forEach(supplier => {
+                if (supplier.orderDays && supplier.orderDays.length > 0) {
+                    if (supplier.orderDays.includes(today)) {
+                        reminders.today.push(supplier);
+                    }
+                    if (supplier.orderDays.includes(tomorrow)) {
+                        reminders.tomorrow.push(supplier);
+                    }
+                }
+            });
+            
+            return reminders;
+        }
+        
+        // Obtener nombre del día
+        function getDayName(dayNumber) {
+            const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            return days[dayNumber];
+        }
+        
+        // Mostrar recordatorios en la interfaz
+        function showReminders() {
+            const reminders = getReminders();
+            const remindersSection = document.getElementById('remindersSection');
+            
+            if (reminders.today.length === 0 && reminders.tomorrow.length === 0) {
+                remindersSection.innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            
+            // Recordatorios de hoy
+            if (reminders.today.length > 0) {
+                html += `
+                    <div style="background: linear-gradient(135deg, #ff4444 0%, #ff6b6b 100%); padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(255,68,68,0.3);">
+                        <h3 style="color: white; margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px;">
+                            🔔 ¡Pedidos para HOY!
+                        </h3>
+                        <div style="display: grid; gap: 8px;">
+                `;
+                reminders.today.forEach(supplier => {
+                    const dayNames = supplier.orderDays.map(d => getDayName(d)).join(', ');
+                    html += `
+                        <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 6px; color: white; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="font-size: 16px;">${supplier.name}</strong>
+                                <br><small style="opacity: 0.9;">Días de pedido: ${dayNames}</small>
+                            </div>
+                            <button onclick="selectSupplierForOrder(${supplier.id})" style="background: white; color: #ff4444; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                                Hacer Pedido ➞
+                            </button>
+                        </div>
+                    `;
+                });
+                html += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Recordatorios de mañana
+            if (reminders.tomorrow.length > 0) {
+                html += `
+                    <div style="background: linear-gradient(135deg, #FFA726 0%, #FFB74D 100%); padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(255,167,38,0.3);">
+                        <h3 style="color: white; margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px;">
+                            📅 Pedidos para MAÑANA
+                        </h3>
+                        <div style="display: grid; gap: 8px;">
+                `;
+                reminders.tomorrow.forEach(supplier => {
+                    const dayNames = supplier.orderDays.map(d => getDayName(d)).join(', ');
+                    html += `
+                        <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 6px; color: white;">
+                            <strong style="font-size: 16px;">${supplier.name}</strong>
+                            <br><small style="opacity: 0.9;">Días de pedido: ${dayNames}</small>
+                        </div>
+                    `;
+                });
+                html += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            remindersSection.innerHTML = html;
+        }
+        
+        // Seleccionar proveedor desde recordatorio
+        function selectSupplierForOrder(supplierId) {
+            document.getElementById('orderSupplier').value = supplierId;
+            loadProductsForOrder();
+            // Hacer scroll al formulario de pedido
+            document.getElementById('orderProducts').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        // Actualizar badge de recordatorios
+        function updateRemindersBadge() {
+            const reminders = getReminders();
+            const totalReminders = reminders.today.length + reminders.tomorrow.length;
+            
+            // Buscar o crear badge en la pestaña de Hacer Pedido
+            const orderTab = document.querySelector('.tab:nth-child(2)');
+            let badge = orderTab.querySelector('.reminder-badge');
+            
+            if (totalReminders > 0) {
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'reminder-badge';
+                    badge.style.cssText = `
+                        position: absolute;
+                        top: 5px;
+                        right: 5px;
+                        background: #ff4444;
+                        color: white;
+                        border-radius: 50%;
+                        width: 20px;
+                        height: 20px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 11px;
+                        font-weight: bold;
+                        animation: pulse 2s infinite;
+                    `;
+                    orderTab.style.position = 'relative';
+                    orderTab.appendChild(badge);
+                }
+                badge.textContent = totalReminders;
+            } else if (badge) {
+                badge.remove();
             }
         }
 
