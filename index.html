@@ -446,6 +446,16 @@
         <div id="suppliers" class="content active">
             <h2 style="margin-bottom: 20px; color: var(--primary-color);">Gestión de Proveedores</h2>
             
+            <!-- Sub-pestañas -->
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button id="btnListaProveedores" onclick="showSupplierSubTab('lista')" style="flex: 1; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; transition: all 0.3s;">
+                    📋 Lista Proveedores
+                </button>
+                <button id="btnNuevoProveedor" onclick="showSupplierSubTab('nuevo')" style="flex: 1; padding: 12px; background: var(--card-bg); color: var(--text-color); border: 2px solid var(--border-color); border-radius: 8px; cursor: pointer; font-size: 16px; transition: all 0.3s;">
+                    ➕ Nuevo Proveedor
+                </button>
+            </div>
+            
             <div class="stats">
                 <div class="stat-card">
                     <h4 id="supplierCount">0</h4>
@@ -457,6 +467,13 @@
                 </div>
             </div>
 
+            <!-- Contenedor de Lista de Proveedores -->
+            <div id="listaProveedoresView">
+                <div id="supplierList" class="supplier-list"></div>
+            </div>
+            
+            <!-- Contenedor de Nuevo Proveedor -->
+            <div id="nuevoProveedorView" style="display: none;">
             <div id="supplierFormView">
                 <div class="form-group">
                     <label>Nombre del Proveedor</label>
@@ -532,8 +549,8 @@
 
                 <div id="currentProductsList" style="margin-top: 20px;"></div>
             </div>
-
-            <div id="supplierList" class="supplier-list"></div>
+            </div>
+            <!-- Fin Contenedor Nuevo Proveedor -->
         </div>
 
         <!-- HACER PEDIDO -->
@@ -693,6 +710,7 @@
             
             saveData();
             updateUI();
+            showSupplierSubTab('lista'); // Volver a la lista
         }
 
         // Añadir producto
@@ -807,6 +825,9 @@
                 updateSupplier(supplierId);
             };
 
+            // Cambiar a la sub-pestaña de Nuevo Proveedor
+            showSupplierSubTab('nuevo');
+            
             // Hacer scroll al formulario
             document.getElementById('supplierFormView').scrollIntoView({ behavior: 'smooth' });
         }
@@ -860,6 +881,7 @@
                 saveData();
                 updateUI();
                 alert('✅ Proveedor actualizado correctamente');
+                showSupplierSubTab('lista'); // Volver a la lista
             }
         }
 
@@ -1477,6 +1499,38 @@
             }
         }
 
+        // Cambiar sub-pestaña de proveedores
+        function showSupplierSubTab(subTab) {
+            const btnLista = document.getElementById('btnListaProveedores');
+            const btnNuevo = document.getElementById('btnNuevoProveedor');
+            const listaView = document.getElementById('listaProveedoresView');
+            const nuevoView = document.getElementById('nuevoProveedorView');
+            
+            if (subTab === 'lista') {
+                // Activar Lista Proveedores
+                btnLista.style.background = 'var(--primary-color)';
+                btnLista.style.color = 'white';
+                btnLista.style.border = 'none';
+                btnNuevo.style.background = 'var(--card-bg)';
+                btnNuevo.style.color = 'var(--text-color)';
+                btnNuevo.style.border = '2px solid var(--border-color)';
+                
+                listaView.style.display = 'block';
+                nuevoView.style.display = 'none';
+            } else {
+                // Activar Nuevo Proveedor
+                btnNuevo.style.background = 'var(--primary-color)';
+                btnNuevo.style.color = 'white';
+                btnNuevo.style.border = 'none';
+                btnLista.style.background = 'var(--card-bg)';
+                btnLista.style.color = 'var(--text-color)';
+                btnLista.style.border = '2px solid var(--border-color)';
+                
+                listaView.style.display = 'none';
+                nuevoView.style.display = 'block';
+            }
+        }
+        
         // Cambiar pestaña
         function showTab(tabName) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
