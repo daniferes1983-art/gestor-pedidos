@@ -439,6 +439,7 @@
                 <button class="tab active" onclick="showTab('suppliers')">Proveedores</button>
                 <button class="tab" onclick="showTab('orders')">Hacer Pedido</button>
                 <button class="tab" onclick="showTab('history')">Historial</button>
+                <button class="tab" onclick="showTab('settings')">Configuración</button>
             </div>
         </div>
 
@@ -612,6 +613,39 @@
 
             <div id="historyList" class="order-list"></div>
         </div>
+        
+        <!-- CONFIGURACIÓN -->
+        <div id="settings" class="content">
+            <h2 style="margin-bottom: 20px; color: var(--primary-color);">Configuración</h2>
+            
+            <div style="max-width: 600px; margin: 0 auto;">
+                <div class="form-group">
+                    <label>📞 Tu Número de WhatsApp</label>
+                    <input type="tel" id="configWhatsapp" placeholder="+34 600 123 456">
+                    <small style="color: var(--text-secondary); font-size: 13px; display: block; margin-top: 5px;">
+                        Este será el número desde donde envías los pedidos por WhatsApp
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label>📧 Tu Correo Electrónico</label>
+                    <input type="email" id="configEmail" placeholder="tu@email.com">
+                    <small style="color: var(--text-secondary); font-size: 13px; display: block; margin-top: 5px;">
+                        Este será el correo desde donde envías los pedidos por email
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label>🎨 Tema de la Aplicación</label>
+                    <select id="configTheme" onchange="changeThemeFromConfig()">
+                        <option value="light">Claro ☀️</option>
+                        <option value="dark">Oscuro 🌙</option>
+                    </select>
+                </div>
+                
+                <button onclick="saveConfig()" style="width: 100%; margin-top: 10px;">✅ Guardar Configuración</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -619,7 +653,12 @@
         let data = {
             suppliers: [],
             orders: [],
-            theme: 'light'
+            theme: 'light',
+            config: {
+                whatsapp: '',
+                email: '',
+                theme: 'light'
+            }
         };
 
         let currentSupplierId = null;
@@ -630,11 +669,18 @@
             const saved = localStorage.getItem('gestionPedidos');
             if (saved) {
                 data = JSON.parse(saved);
-                // Aplicar tema guardado
-                if (data.theme === 'dark') {
-                    document.body.classList.add('dark-mode');
-                    document.querySelector('.theme-toggle').textContent = '☀️';
+                // Asegurar que existe la configuración
+                if (!data.config) {
+                    data.config = { whatsapp: '', email: '', theme: data.theme || 'light' };
                 }
+                // Aplicar tema guardado
+                if (data.config.theme === 'dark' || data.theme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    const themeBtn = document.querySelector('.theme-toggle');
+                    if (themeBtn) themeBtn.textContent = '☀️';
+                }
+                // Cargar valores en el formulario de configuración
+                loadConfigValues();
             }
             filteredOrders = [...data.orders];
             updateUI();
@@ -1179,7 +1225,14 @@
             body += `\nGracias.`;
 
             const subject = `Pedido - ${order.supplierName} - ${new Date().toLocaleDateString()}`;
-            const mailtoLink = `mailto:${supplier.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            
+            // Construir el mailto link
+            let mailtoLink = `mailto:${supplier.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            
+            // Añadir el remitente si está configurado
+            if (data.config && data.config.email) {
+                mailtoLink += `&from=${encodeURIComponent(data.config.email)}`;
+            }
             
             window.location.href = mailtoLink;
         }
@@ -1197,6 +1250,12 @@
 
             // Crear el mensaje (sin emojis para mejor compatibilidad)
             let message = `*PEDIDO*\n\n`;
+            
+            // Añadir información del remitente si está configurada
+            if (data.config && data.config.whatsapp) {
+                message += `De: ${data.config.whatsapp}\n`;
+            }
+            
             message += `Fecha: ${order.date}\n`;
             message += `Proveedor: ${order.supplierName}\n\n`;
             message += `*Productos:*\n`;
@@ -1542,6 +1601,52 @@
             // Si cambiamos de pestaña, volver a la vista de proveedores
             if (tabName === 'suppliers' && currentSupplierId !== null) {
                 finishAddingProducts();
+            }
+        }
+        
+        // Cargar valores de configuración en el formulario
+        function loadConfigValues() {
+            if (data.config) {
+                const whatsappInput = document.getElementById('configWhatsapp');
+                const emailInput = document.getElementById('configEmail');
+                const themeSelect = document.getElementById('configTheme');
+                
+                if (whatsappInput) whatsappInput.value = data.config.whatsapp || '';
+                if (emailInput) emailInput.value = data.config.email || '';
+                if (themeSelect) themeSelect.value = data.config.theme || 'light';
+            }
+        }
+        
+        // Guardar configuración
+        function saveConfig() {
+            const whatsapp = document.getElementById('configWhatsapp').value.trim();
+            const email = document.getElementById('configEmail').value.trim();
+            const theme = document.getElementById('configTheme').value;
+            
+            data.config = {
+                whatsapp: whatsapp,
+                email: email,
+                theme: theme
+            };
+            
+            // Actualizar tema global
+            data.theme = theme;
+            
+            saveData();
+            alert('✅ Configuración guardada correctamente');
+        }
+        
+        // Cambiar tema desde configuración
+        function changeThemeFromConfig() {
+            const theme = document.getElementById('configTheme').value;
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+                const themeBtn = document.querySelector('.theme-toggle');
+                if (themeBtn) themeBtn.textContent = '☀️';
+            } else {
+                document.body.classList.remove('dark-mode');
+                const themeBtn = document.querySelector('.theme-toggle');
+                if (themeBtn) themeBtn.textContent = '🌙';
             }
         }
 
