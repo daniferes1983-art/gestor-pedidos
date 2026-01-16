@@ -704,6 +704,30 @@
                 </select>
             </div>
             
+            <div class="form-group">
+                <label>💬 Plantilla de WhatsApp (Opcional)</label>
+                <textarea id="configWhatsappTemplate" rows="4" placeholder="Ej: Hola {proveedor}, te envío el pedido del {fecha}:\n\n{productos}\n\nSaludos!" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary); color: var(--text); font-family: inherit; resize: vertical;"></textarea>
+                <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px;">
+                    Variables disponibles: {fecha}, {proveedor}, {productos}. Dejar vacío para usar formato predeterminado.
+                </small>
+            </div>
+            
+            <div class="form-group">
+                <label>📧 Asunto del Email (Opcional)</label>
+                <input type="text" id="configEmailSubject" placeholder="Ej: Pedido - {proveedor} - {fecha}" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary); color: var(--text);">
+                <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px;">
+                    Dejar vacío para usar formato predeterminado.
+                </small>
+            </div>
+            
+            <div class="form-group">
+                <label>📧 Cuerpo del Email (Opcional)</label>
+                <textarea id="configEmailBody" rows="4" placeholder="Ej: Hola,\n\nTe envío el pedido del {fecha}:\n\n{productos}\n\nSaludos" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary); color: var(--text); font-family: inherit; resize: vertical;"></textarea>
+                <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px;">
+                    Variables disponibles: {fecha}, {proveedor}, {productos}. Dejar vacío para usar formato predeterminado.
+                </small>
+            </div>
+            
             <button onclick="saveConfig()" style="width: 100%; margin-top: 10px;">✅ Guardar Configuración</button>
         </div
     </div>
@@ -731,7 +755,14 @@
                 data = JSON.parse(saved);
                 // Asegurar que existe la configuración
                 if (!data.config) {
-                    data.config = { whatsapp: '', email: '', theme: data.theme || 'light' };
+                    data.config = { 
+                        whatsapp: '', 
+                        email: '', 
+                        theme: data.theme || 'light',
+                        whatsappTemplate: '',
+                        emailSubject: '',
+                        emailBody: ''
+                    };
                 }
                 // Aplicar tema guardado
                 if (data.config.theme === 'dark' || data.theme === 'dark') {
@@ -760,6 +791,9 @@
             document.getElementById('configWhatsapp').value = data.config.whatsapp || '';
             document.getElementById('configEmail').value = data.config.email || '';
             document.getElementById('configTheme').value = data.config.theme || 'light';
+            document.getElementById('configWhatsappTemplate').value = data.config.whatsappTemplate || '';
+            document.getElementById('configEmailSubject').value = data.config.emailSubject || '';
+            document.getElementById('configEmailBody').value = data.config.emailBody || '';
         }
         
         // Cerrar modal de configuración
@@ -1275,20 +1309,43 @@
                 return;
             }
 
-            // Crear el cuerpo del email
-            let body = `Hola,\n\nTe envío el siguiente pedido:\n\n`;
-            body += `Fecha: ${order.date}\n`;
-            body += `Proveedor: ${order.supplierName}\n\n`;
-            body += `Productos:\n`;
+            // Generar lista de productos
+            let productsList = '';
             order.products.forEach(p => {
-                body += `  - ${p.quantity || 1}x ${p.name}`;
-                if (p.price) body += ` (${p.price})`;
-                if (p.notes) body += ` - ${p.notes}`;
-                body += `\n`;
+                productsList += `  - ${p.quantity || 1}x ${p.name}`;
+                if (p.price) productsList += ` (${p.price})`;
+                if (p.notes) productsList += ` - ${p.notes}`;
+                productsList += `\n`;
             });
-            body += `\nGracias.`;
 
-            const subject = `Pedido - ${order.supplierName} - ${new Date().toLocaleDateString()}`;
+            // Usar plantillas personalizadas o formato predeterminado
+            let subject, body;
+            
+            if (data.config && data.config.emailSubject) {
+                // Usar asunto personalizado
+                subject = data.config.emailSubject
+                    .replace(/{fecha}/g, order.date)
+                    .replace(/{proveedor}/g, order.supplierName);
+            } else {
+                // Asunto predeterminado
+                subject = `Pedido - ${order.supplierName} - ${new Date().toLocaleDateString()}`;
+            }
+            
+            if (data.config && data.config.emailBody) {
+                // Usar cuerpo personalizado
+                body = data.config.emailBody
+                    .replace(/{fecha}/g, order.date)
+                    .replace(/{proveedor}/g, order.supplierName)
+                    .replace(/{productos}/g, productsList.trim());
+            } else {
+                // Cuerpo predeterminado
+                body = `Hola,\n\nTe envío el siguiente pedido:\n\n`;
+                body += `Fecha: ${order.date}\n`;
+                body += `Proveedor: ${order.supplierName}\n\n`;
+                body += `Productos:\n`;
+                body += productsList;
+                body += `\nGracias.`;
+            }
             
             // Construir el mailto link
             let mailtoLink = `mailto:${supplier.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -1312,24 +1369,38 @@
                 return;
             }
 
-            // Crear el mensaje (sin emojis para mejor compatibilidad)
-            let message = `*PEDIDO*\n\n`;
-            
-            // Añadir información del remitente si está configurada
-            if (data.config && data.config.whatsapp) {
-                message += `De: ${data.config.whatsapp}\n`;
-            }
-            
-            message += `Fecha: ${order.date}\n`;
-            message += `Proveedor: ${order.supplierName}\n\n`;
-            message += `*Productos:*\n`;
+            // Generar lista de productos
+            let productsList = '';
             order.products.forEach(p => {
-                message += `• ${p.quantity || 1}x *${p.name}*`;
-                if (p.price) message += ` (${p.price})`;
-                if (p.notes) message += ` - _${p.notes}_`;
-                message += `\n`;
+                productsList += `• ${p.quantity || 1}x *${p.name}*`;
+                if (p.price) productsList += ` (${p.price})`;
+                if (p.notes) productsList += ` - _${p.notes}_`;
+                productsList += `\n`;
             });
-            message += `\nGracias!`;
+
+            // Usar plantilla personalizada o formato predeterminado
+            let message;
+            if (data.config && data.config.whatsappTemplate) {
+                // Usar plantilla personalizada
+                message = data.config.whatsappTemplate
+                    .replace(/{fecha}/g, order.date)
+                    .replace(/{proveedor}/g, order.supplierName)
+                    .replace(/{productos}/g, productsList.trim());
+            } else {
+                // Formato predeterminado
+                message = `*PEDIDO*\n\n`;
+                
+                // Añadir información del remitente si está configurada
+                if (data.config && data.config.whatsapp) {
+                    message += `De: ${data.config.whatsapp}\n`;
+                }
+                
+                message += `Fecha: ${order.date}\n`;
+                message += `Proveedor: ${order.supplierName}\n\n`;
+                message += `*Productos:*\n`;
+                message += productsList;
+                message += `\nGracias!`;
+            }
 
             // Limpiar número de WhatsApp (quitar espacios y caracteres especiales excepto +)
             const phoneNumber = supplier.whatsapp.replace(/[^\d+]/g, '');
@@ -1686,11 +1757,17 @@
             const whatsapp = document.getElementById('configWhatsapp').value.trim();
             const email = document.getElementById('configEmail').value.trim();
             const theme = document.getElementById('configTheme').value;
+            const whatsappTemplate = document.getElementById('configWhatsappTemplate').value.trim();
+            const emailSubject = document.getElementById('configEmailSubject').value.trim();
+            const emailBody = document.getElementById('configEmailBody').value.trim();
             
             data.config = {
                 whatsapp: whatsapp,
                 email: email,
-                theme: theme
+                theme: theme,
+                whatsappTemplate: whatsappTemplate,
+                emailSubject: emailSubject,
+                emailBody: emailBody
             };
             
             // Actualizar tema global
