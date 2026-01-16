@@ -1337,6 +1337,11 @@
                     .replace(/{fecha}/g, order.date)
                     .replace(/{proveedor}/g, order.supplierName)
                     .replace(/{productos}/g, productsList.trim());
+                
+                // Si la plantilla no incluye {productos}, añadirlos al final
+                if (!data.config.emailBody.includes('{productos}')) {
+                    body += `\n\nProductos:\n${productsList}`;
+                }
             } else {
                 // Cuerpo predeterminado
                 body = `Hola,\n\nTe envío el siguiente pedido:\n\n`;
@@ -1386,6 +1391,11 @@
                     .replace(/{fecha}/g, order.date)
                     .replace(/{proveedor}/g, order.supplierName)
                     .replace(/{productos}/g, productsList.trim());
+                
+                // Si la plantilla no incluye {productos}, añadirlos al final
+                if (!data.config.whatsappTemplate.includes('{productos}')) {
+                    message += `\n\n*Productos:*\n${productsList}`;
+                }
             } else {
                 // Formato predeterminado
                 message = `*PEDIDO*\n\n`;
